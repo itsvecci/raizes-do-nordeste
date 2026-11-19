@@ -284,6 +284,8 @@ utilize o token CLIENTE ao testar essa rota.
 - **Dados enviados:** Unidade ID 1 e produto ID 5, sem o campo `canal_pedido`.
 - **Resultado obtido:** HTTP 422 — Unprocessable Entity.
 - **Conclusão:** Teste aprovado. A API identificou a ausência do campo obrigatório `canal_pedido`.
+-**Resultado esperado:** HTTP 422 — Unprocessable Entity, com identificação da ausência do campo obrigatório canal_pedido.
+-**Verificação após a padronização:** HTTP 422, com os campos erro.codigo, erro.mensagem e erro.detalhes. O tipo de validação retornado foi missing, -indicando que o campo canal_pedido não foi informado.
 
 ### 5.13. Teste negativo — Pedido com tipo de dado inválido
 
@@ -295,6 +297,8 @@ utilize o token CLIENTE ao testar essa rota.
 - **Dados enviados:** Produto ID 5, quantidade informada como texto (`"abc"`).
 - **Resultado obtido:** HTTP 422 — Unprocessable Entity. A validação retornou `int_parsing`, indicando que o texto não pôde ser convertido em número inteiro.
 - **Conclusão:** Teste aprovado. A API rejeitou corretamente o tipo de dado inválido.
+-**Resultado esperado:** HTTP 422, com rejeição do valor textual informado no campo quantidade.
+-**Verificação após a padronização:** HTTP 422, com os campos erro.codigo, erro.mensagem e erro.detalhes. O tipo de validação retornado foi int_parsing.
 
 ### 5.14. Teste administrativo — Consulta de todos os pedidos
 

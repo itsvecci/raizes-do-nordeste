@@ -1332,3 +1332,32 @@ As medidas básicas de segurança, validação e documentação foram desenvolvi
 
 Recursos avançados de infraestrutura, observabilidade, auditoria e processamento concorrente foram identificados como melhorias futuras, pois dependem de requisitos adicionais de implantação e operação.
 
+## Padronização e tratamento de erros da API
+
+### Tratamento de exceções
+
+A API utiliza mecanismos de tratamento de exceções do FastAPI para organizar as respostas de erro. As exceções HTTP relacionadas às regras de negócio, à autenticação e às permissões são tratadas por meio de `HTTPException`.
+
+Os erros de validação dos dados recebidos são identificados por `RequestValidationError`, incluindo situações como campos obrigatórios ausentes, tipos de dados inválidos e valores que não atendem às restrições definidas nos schemas.
+
+Os tratadores configurados utilizam `JSONResponse` e adotam uma estrutura básica composta pelos campos `erro`, `codigo` e `mensagem`. Nas respostas HTTP 422, o objeto `erro` também apresenta o campo `detalhes`, contendo informações sobre os campos que não passaram na validação.
+
+Nos erros HTTP tratados, os códigos de status originais são preservados. Quando presentes na exceção, os cabeçalhos HTTP também são mantidos, incluindo `WWW-Authenticate` nos casos de autenticação.
+
+### Códigos HTTP verificados
+
+| Código HTTP | Situação testada | Resultado |
+|---|---|---|
+| 400 — Bad Request | Produtos duplicados no mesmo pedido | Aprovado |
+| 401 — Unauthorized | Token JWT inválido | Aprovado |
+| 403 — Forbidden | Cliente tentando acessar uma rota administrativa | Aprovado |
+| 404 — Not Found | Consulta a produto inexistente | Aprovado |
+| 409 — Conflict | Pedido com estoque insuficiente | Aprovado |
+| 422 — Unprocessable Entity | Quantidade inválida, canal ausente e canal inválido | Aprovado |
+
+### Limitações e melhorias futuras
+
+A padronização foi verificada nos cenários de erros HTTP e de validação descritos acima. Erros inesperados do servidor ainda não possuem um tratamento específico implementado.
+
+As mensagens detalhadas produzidas pelo Pydantic podem permanecer em inglês. Como melhoria futura, poderão ser adotadas mensagens traduzidas e documentação explícita dos modelos de resposta de erro no Swagger/OpenAPI.
+

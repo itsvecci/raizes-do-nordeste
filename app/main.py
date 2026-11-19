@@ -22,7 +22,31 @@ app = FastAPI(
     version="1.0.0"
 )
 
+@app.exception_handler(HTTPException)
+def tratar_erro_http(request, exc: HTTPException):
+    return JSONResponse(
+        status_code=exc.status_code,
+        content={
+            "erro": {
+                "codigo": exc.status_code,
+                "mensagem": exc.detail
+            }
+        },
+        headers=exc.headers
+    )
 
+@app.exception_handler(RequestValidationError)
+def tratar_erro_validacao(request, exc: RequestValidationError):
+    return JSONResponse(
+        status_code=422,
+        content={
+            "erro": {
+                "codigo": 422,
+                "mensagem": "Erro de validação dos dados enviados",
+                "detalhes": exc.errors()
+            }
+        }
+    )
 
 
 Base.metadata.create_all(bind=engine)
@@ -831,16 +855,16 @@ def cadastrar_pedido(
         models.Produto.id.in_([item.produto_id for item in dados.itens])
     ).all()
 
-    if len(dados.itens) != len(produtos):
-        raise HTTPException(
-            status_code=404,
-            detail="Um ou mais produtos não encontrados"
-        )
-
     if len(dados.itens) != len(set(item.produto_id for item in dados.itens)):
         raise HTTPException(
             status_code=400,
             detail="Produtos duplicados no pedido"
+        )
+
+    if len(dados.itens) != len(produtos):
+        raise HTTPException(
+            status_code=404,
+            detail="Um ou mais produtos não encontrados"
         )
 
     if any(produto.unidade_id != dados.unidade_id for produto in produtos):
