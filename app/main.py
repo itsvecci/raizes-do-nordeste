@@ -255,30 +255,36 @@ def listar_todas_promocoes(
 @app.get("/admin/pedidos")
 def listar_todos_pedidos(
     skip: int = Query(0, ge=0),
-    limit: int = Query(10, ge=1, le=100),   
+    limit: int = Query(10, ge=1, le=100),
+    canal_pedido: Literal["APP", "TOTEM", "BALCAO", "PICKUP", "WEB"] | None = Query(None),
     db: Session = Depends(get_db),
     usuario: models.Usuario = Depends(exigir_admin)
 ):
-    pedidos = db.query(models.Pedido).offset(skip).limit(limit).all()
+    consulta = db.query(models.Pedido)
 
+    if canal_pedido is not None:
+        consulta = consulta.filter(
+            models.Pedido.canal_pedido == canal_pedido
+        )
+
+    pedidos = consulta.offset(skip).limit(limit).all()
 
     lista_pedidos = []
 
     for pedido in pedidos:
         lista_pedidos.append({
-        "id": pedido.id,
-        "unidade_id": pedido.unidade_id,
-        "usuario_id": pedido.usuario_id,
-        "canal_pedido": pedido.canal_pedido,
-        "valor_total": float(pedido.valor_total),
-        "status": pedido.status,
-        "pontos_creditados": pedido.pontos_creditados,
+            "id": pedido.id,
+            "unidade_id": pedido.unidade_id,
+            "usuario_id": pedido.usuario_id,
+            "canal_pedido": pedido.canal_pedido,
+            "valor_total": float(pedido.valor_total),
+            "status": pedido.status,
+            "pontos_creditados": pedido.pontos_creditados,
         })
-    
+
     return {
         "pedidos": lista_pedidos
-   
-}
+    }
 
 
 @app.get("/pedidos")

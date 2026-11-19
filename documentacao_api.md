@@ -1167,3 +1167,27 @@ O campo `simular_recusa` é opcional e assume `false` quando não informado.
 - HTTP 400 para violações das regras de resgate e HTTP 404 quando o pedido não é encontrado ou não pertence ao usuário.
 - HTTP 401 Unauthorized: token ausente ou inválido.
 - HTTP 422 Unprocessable Entity: dados inválidos, como quantidade de pontos ausente ou menor ou igual a zero.
+
+## Atores e responsabilidades do sistema
+
+O Diagrama de Casos de Uso representa os participantes envolvidos nas operações do sistema Raízes do Nordeste.
+
+- **Cliente:** realiza cadastro, autenticação, consultas, pedidos, pagamentos e operações de fidelidade.
+- **Atendente (Balcão):** representa o atendimento presencial e a participação no registro de pedidos pelo canal BALCAO.
+- **Cozinha:** representa a participação operacional no preparo dos pedidos e no acompanhamento de seus status.
+- **Gerente / Administrador:** gerencia unidades, produtos, estoque, promoções e acompanha os pedidos.
+- **Sistema Externo de Pagamento (Gateway):** representa a integração de pagamento, simulada na implementação por meio de um gateway MOCK.
+
+Na implementação atual, os perfis de autenticação disponíveis são CLIENTE e ADMIN. Os atores Atendente e Cozinha representam responsabilidades operacionais previstas no cenário, mas não possuem perfis próprios de autenticação nem permissões específicas implementadas.
+
+O processamento dos pagamentos utiliza uma simulação local, sem comunicação com um serviço financeiro externo real.
+
+## Regra de unicidade do resgate de pontos
+
+A entidade ResgatePontos possui uma chave estrangeira que referencia o pedido ao qual o resgate pertence.
+
+Embora o modelo de dados permita estruturalmente múltiplos registros associados a um mesmo pedido, a API aplica uma regra de negócio que limita a realização de um único resgate por pedido.
+
+Antes de registrar um novo resgate, a aplicação verifica se já existe um registro associado ao pedido informado. Caso exista, a operação é rejeitada com HTTP 400.
+
+Essa restrição é aplicada na camada de aplicação, não por uma restrição UNIQUE no banco de dados.

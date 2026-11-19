@@ -130,3 +130,12 @@ raizes-do-nordeste/
 ├── .gitignore
 └── README.md
 ```
+
+## Arquitetura e organização do projeto
+
+O projeto utiliza uma organização modular, com separação de responsabilidades entre os componentes da aplicação.
+- Camada de API: concentrada principalmente no arquivo main.py, responsável pela definição dos endpoints REST, recebimento das requisições e retorno das respostas.
+- Modelagem de dados: realizada em models.py, que define as entidades utilizadas para representar os dados persistidos no banco.
+- Validação de dados: realizada em schemas.py, utilizando Pydantic para validar e estruturar as informações recebidas e retornadas pela API.
+- Persistência: organizada em database.py, responsável pela configuração da conexão com o banco de dados e pelo gerenciamento das sessões do SQLAlchemy.
+- Segurança: dividida entre security.py, responsável pelo tratamento seguro das senhas, e auth.py, responsável pela autenticação baseada em tokens JWT.
