@@ -1,0 +1,9 @@
+.env
+.venv/
+__pycache__/
+*.py[cod]
+teste.txt
+raizes.db
+.vscode/
+*.db
+*.sqlite3
