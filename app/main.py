@@ -1,6 +1,8 @@
 import json
 from datetime import datetime
 from fastapi import FastAPI, Depends, HTTPException, status, Query
+from fastapi.exceptions import RequestValidationError
+from fastapi.responses import JSONResponse
 from fastapi.security import HTTPBearer
 from sqlalchemy.orm import Session
 from app.schemas import UsuarioCadastro, UsuarioLogin, UnidadeCadastro, ProdutoCadastro, PedidoCadastro, PedidoItemCadastro, PedidoStatusUpdate, EstoqueUpdate, PagamentoCadastro, ResgatePontosCadastro, PromocaoCadastro
@@ -19,6 +21,9 @@ app = FastAPI(
     description="API de aprendizado do projeto",
     version="1.0.0"
 )
+
+
+
 
 Base.metadata.create_all(bind=engine)
 

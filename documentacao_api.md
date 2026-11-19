@@ -1191,3 +1191,144 @@ Embora o modelo de dados permita estruturalmente múltiplos registros associados
 Antes de registrar um novo resgate, a aplicação verifica se já existe um registro associado ao pedido informado. Caso exista, a operação é rejeitada com HTTP 400.
 
 Essa restrição é aplicada na camada de aplicação, não por uma restrição UNIQUE no banco de dados.
+
+## Segurança e proteção de dados pessoais (LGPD)
+
+O sistema Raízes do Nordeste realiza o tratamento de dados pessoais necessários para o cadastro, autenticação e gerenciamento das operações dos usuários.
+
+A implementação contempla mecanismos básicos de segurança e controle de acesso, considerando princípios de proteção de dados pessoais previstos na Lei Geral de Proteção de Dados Pessoais (Lei nº 13.709/2018).
+
+### Medidas de segurança implementadas
+
+- **Proteção de senhas:** as senhas são armazenadas utilizando hash, evitando seu armazenamento diretamente em texto puro.
+- **Autenticação:** o acesso às funcionalidades protegidas utiliza tokens JWT.
+- **Controle de acesso:** os perfis CLIENTE e ADMIN possuem permissões distintas.
+- **Restrição de consultas:** determinadas operações verificam a identidade do usuário autenticado para impedir o acesso a pedidos pertencentes a outros clientes.
+- **Proteção de configurações:** a chave secreta utilizada na autenticação é configurada por variável de ambiente, sem inclusão do arquivo `.env` no repositório público.
+- **Consentimento para resgate:** o sistema exige a confirmação do campo `consentimento` na operação de resgate de pontos de fidelidade.
+
+### Limitações e melhorias futuras
+
+As medidas implementadas representam uma abordagem inicial de segurança para o ambiente acadêmico e não garantem, isoladamente, conformidade integral com a LGPD.
+
+Entre as melhorias previstas estão a definição de uma política de privacidade, procedimentos para atendimento aos direitos dos titulares, regras de retenção e exclusão de dados pessoais, registros de auditoria e utilização de HTTPS em um ambiente de produção.
+
+Também será necessário avaliar os procedimentos de coleta, armazenamento e tratamento de dados pessoais antes de uma eventual disponibilização comercial do sistema.
+
+## Logs, auditoria e rastreabilidade
+
+O projeto utiliza o Uvicorn para executar a API FastAPI, permitindo a visualização de registros básicos de execução e requisições HTTP no terminal durante o desenvolvimento.
+
+Na implementação atual, não foi desenvolvido um mecanismo específico de auditoria para registrar detalhadamente as ações realizadas pelos usuários.
+
+Entretanto, determinadas operações possuem rastreabilidade por meio dos registros persistidos no banco de dados, como pedidos, pagamentos e resgates de pontos.
+
+### Melhorias futuras
+
+Para uma eventual utilização em produção, estão previstas as seguintes melhorias:
+
+- Implementação de logs estruturados para eventos relevantes da aplicação.
+- Registro de ações administrativas, como alterações em produtos, unidades e promoções.
+- Auditoria de operações financeiras e resgates de pontos.
+- Identificação do usuário responsável, data, horário e tipo de operação.
+- Tratamento seguro dos registros, evitando a exposição de senhas, tokens e outros dados sensíveis.
+
+Essas melhorias permitiriam maior capacidade de monitoramento, investigação de falhas e rastreabilidade das operações do sistema.
+
+## Tratamento de falhas e pagamentos simulados
+
+A API utiliza um gateway de pagamento simulado, identificado como MOCK, permitindo representar operações aprovadas e recusadas sem comunicação com um serviço financeiro externo.
+
+### Validações implementadas
+
+- O pagamento exige autenticação e deve estar associado a um pedido pertencente ao usuário autenticado.
+- Apenas pedidos com status PENDENTE podem receber tentativas de pagamento.
+- A aplicação impede o registro de um novo pagamento quando já existe um pagamento aprovado para o pedido.
+- Pagamentos recusados são registrados no banco de dados, permitindo novas tentativas enquanto o pedido permanecer pendente e não houver pagamento aprovado.
+- As informações da tentativa são registradas nos campos de requisição e resposta do pagamento.
+
+### Limitações e melhorias futuras
+
+A implementação atual não realiza chamadas a serviços financeiros externos, portanto não simula indisponibilidade de rede, tempo limite de resposta ou interrupções de comunicação com um gateway real.
+
+Em um ambiente de produção, seriam necessárias medidas adicionais, como controle de idempotência, tratamento de falhas de comunicação, políticas de repetição de requisições e mecanismos de consistência para operações simultâneas.
+
+O objetivo da implementação atual é demonstrar o funcionamento das regras essenciais de pagamento e permitir a validação dos cenários de aprovação e recusa.
+
+## Desempenho e disponibilidade
+
+O projeto Raízes do Nordeste foi desenvolvido e testado em ambiente local, utilizando FastAPI, Uvicorn, SQLAlchemy e SQLite.
+
+A aplicação utiliza paginação em determinadas consultas para limitar a quantidade de registros retornados por requisição, contribuindo para a organização das respostas e para o controle do volume de dados consultados.
+
+### Limitações atuais
+
+Não foram realizados testes específicos de carga, estresse ou concorrência para determinar a capacidade de atendimento simultâneo da API.
+
+O banco de dados SQLite atende às necessidades do protótipo acadêmico, mas apresenta limitações para cenários com elevado volume de escritas concorrentes.
+
+A aplicação também não possui infraestrutura de alta disponibilidade, balanceamento de carga ou mecanismos automáticos de recuperação de falhas.
+
+### Melhorias futuras
+
+Para uma eventual implantação em produção, poderão ser consideradas medidas como:
+
+- Migração para um banco de dados adequado a operações concorrentes, como PostgreSQL.
+- Realização de testes de carga e desempenho.
+- Configuração de monitoramento e métricas da aplicação.
+- Utilização de infraestrutura com mecanismos de recuperação e disponibilidade.
+- Otimização de consultas e análise do desempenho dos endpoints.
+
+Essas melhorias dependerão dos requisitos de uso e do volume de operações esperado para o sistema.
+
+## Requisitos funcionais e não funcionais
+
+Os requisitos do sistema Raízes do Nordeste foram definidos considerando as operações de uma plataforma de comercialização de alimentos regionais, com gerenciamento de unidades, produtos, pedidos, pagamentos e fidelização de clientes.
+
+### Requisitos funcionais (RF)
+
+| Identificador | Requisito | Situação |
+|---|---|---|
+| RF01 | Permitir o cadastro e a autenticação de usuários. | Implementado |
+| RF02 | Controlar o acesso às funcionalidades conforme os perfis CLIENTE e ADMIN. | Implementado |
+| RF03 | Permitir o gerenciamento de unidades. | Implementado |
+| RF04 | Permitir o cadastro, a consulta, a atualização e a desativação de produtos. | Implementado |
+| RF05 | Controlar a disponibilidade e o estoque dos produtos. | Implementado |
+| RF06 | Permitir a criação e a consulta de pedidos. | Implementado |
+| RF07 | Registrar o canal de origem dos pedidos (APP, TOTEM, BALCAO, PICKUP e WEB). | Implementado |
+| RF08 | Permitir a consulta e a filtragem administrativa de pedidos por canal. | Implementado |
+| RF09 | Controlar a atualização dos status e o cancelamento de pedidos. | Implementado |
+| RF10 | Registrar pagamentos simulados com resultados de aprovação e recusa. | Implementado |
+| RF11 | Impedir uma nova aprovação de pagamento para pedidos que já possuem pagamento aprovado, nas operações sequenciais. | Implementado |
+| RF12 | Permitir o acúmulo de pontos de fidelidade após a entrega dos pedidos. | Implementado |
+| RF13 | Permitir o resgate de pontos para desconto em pedidos pendentes. | Implementado |
+| RF14 | Permitir o gerenciamento de promoções e a aplicação de descontos conforme as regras definidas. | Implementado |
+
+Os requisitos apresentados correspondem às funcionalidades desenvolvidas na API e documentadas nos endpoints do projeto.
+
+### Requisitos não funcionais (RNF)
+
+| Identificador | Requisito | Situação |
+|---|---|---|
+| RNF01 | Proteger as senhas dos usuários por meio de armazenamento com hash. | Implementado |
+| RNF02 | Utilizar autenticação JWT para proteger endpoints que exigem identificação do usuário. | Implementado |
+| RNF03 | Restringir funcionalidades administrativas por meio de controle de acesso baseado em perfis. | Implementado |
+| RNF04 | Validar os dados recebidos pela API e retornar códigos HTTP apropriados para erros identificados. | Implementado |
+| RNF05 | Disponibilizar documentação interativa dos endpoints utilizando Swagger/OpenAPI. | Implementado |
+| RNF06 | Persistir as informações do sistema em banco de dados relacional utilizando SQLAlchemy. | Implementado |
+| RNF07 | Manter separação modular de responsabilidades para facilitar a manutenção do código. | Implementado parcialmente |
+| RNF08 | Considerar princípios de proteção de dados pessoais previstos na LGPD. | Implementado parcialmente |
+| RNF09 | Permitir auditoria detalhada de ações sensíveis realizadas pelos usuários. | Planejado |
+| RNF10 | Suportar elevado volume de acessos simultâneos com desempenho comprovado. | Não validado |
+| RNF11 | Disponibilizar mecanismos de alta disponibilidade e recuperação automática de falhas. | Planejado |
+| RNF12 | Implementar mecanismos de tolerância a falhas de comunicação com gateways externos de pagamento. | Planejado |
+| RNF13 | Garantir proteção contra processamento duplicado de pagamentos em cenários concorrentes. | Planejado |
+
+### Priorização dos requisitos
+
+A implementação priorizou as funcionalidades essenciais do fluxo de pedidos, incluindo autenticação, controle de estoque, pagamentos simulados, multicanalidade e fidelização de clientes.
+
+As medidas básicas de segurança, validação e documentação foram desenvolvidas para permitir o funcionamento e a verificação da API no contexto acadêmico.
+
+Recursos avançados de infraestrutura, observabilidade, auditoria e processamento concorrente foram identificados como melhorias futuras, pois dependem de requisitos adicionais de implantação e operação.
+
