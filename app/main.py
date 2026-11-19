@@ -5,7 +5,7 @@ from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
 from fastapi.security import HTTPBearer
 from sqlalchemy.orm import Session
-from app.schemas import UsuarioCadastro, UsuarioLogin, UnidadeCadastro, ProdutoCadastro, PedidoCadastro, PedidoItemCadastro, PedidoStatusUpdate, EstoqueUpdate, PagamentoCadastro, ResgatePontosCadastro, PromocaoCadastro
+from app.schemas import UsuarioCadastro, UsuarioLogin, UnidadeCadastro, ProdutoCadastro, PedidoCadastro, PedidoItemCadastro, PedidoStatusUpdate, EstoqueUpdate, PagamentoCadastro, ResgatePontosCadastro, PromocaoCadastro, PagamentoResposta, PedidoResposta
 from app.database import engine, Base, get_db
 from app import models 
 from app.security import gerar_hash_senha, verificar_senha
@@ -824,7 +824,17 @@ def cadastrar_promocao(
     }
 
 
-@app.post("/pedidos", status_code=201)
+@app.post("/pedidos", 
+        status_code=201,
+        response_model=PedidoResposta,
+        responses={
+            400: {"description": "Dados inconsistentes ou operação não permitida"},
+            401: {"description": "Autenticação ausente, inválida ou expirada"},
+            404: {"description": "Unidade ou produto não encontrado"},
+            409: {"description": "Estoque insuficiente"},
+            422: {"description": "Erro de validação dos dados enviados"}
+        }
+)
 def cadastrar_pedido(
     dados: PedidoCadastro,
     db: Session = Depends(get_db),
@@ -943,7 +953,17 @@ def cadastrar_pedido(
         "valor_total": float(novo_pedido.valor_total),
     }
 
-@app.post("/pagamentos", status_code=201)
+@app.post("/pagamentos",
+        status_code=201,
+        response_model=PagamentoResposta,
+        responses={
+            400: {"description": "Pagamento não permitido ou já aprovado"},
+            401: {"description": "Autenticação ausente, inválida ou expirada"},
+            404: {"description": "Pedido não encontrado"},
+            422: {"description": "Erro de validação dos dados enviados"}   
+
+         }
+)
 def cadastrar_pagamento(
     dados: PagamentoCadastro,
     db: Session = Depends(get_db),

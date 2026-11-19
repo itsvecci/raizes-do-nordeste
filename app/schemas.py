@@ -1,6 +1,7 @@
 from pydantic import BaseModel, EmailStr, Field
 from typing import Literal
 from datetime import datetime
+from decimal import Decimal
 
 class UsuarioCadastro(BaseModel):
     model_config = {
@@ -46,12 +47,26 @@ class PedidoCadastro(BaseModel):
 class PedidoStatusUpdate(BaseModel):
     status: Literal["PENDENTE", "EM_PREPARO", "PRONTO", "ENTREGUE", "CANCELADO"]
 
+class PedidoResposta(BaseModel):
+    mensagem: str
+    id: int
+    unidade_id: int
+    canal_pedido: str
+    valor_total: float
+
 class EstoqueUpdate(BaseModel):
     estoque: int = Field(ge=0)
 
 class PagamentoCadastro(BaseModel):
     pedido_id: int
     simular_recusa: bool = False
+
+class PagamentoResposta(BaseModel):
+    id: int
+    pedido_id: int
+    valor: Decimal
+    status: str
+    gateway: str
 
 class ResgatePontosCadastro(BaseModel):
     pontos_utilizados: int = Field(gt=0)
